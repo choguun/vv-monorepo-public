@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1,
+        "name": "man1_model",
+        "file": "male1_model.glb"
+    },
+    {
+        "id": 2,
+        "name": "man2_model",
+        "file": "male2_model.glb"
+    },
+    {
+        "id": 3,
+        "name": "man3_model",
+        "file": "male3_model.glb"
+    },
+    {
+        "id": 4,
+        "name": "man1_model",
+        "file": "female1_model.glb"
+    },
+    {
+        "id": 5,
+        "name": "girl2_model",
+        "file": "female2_model.glb"
+    },
+    {
+        "id": 6,
+        "name": "girl4_model",
+        "file": "female3_model.glb"
+    }
+]
