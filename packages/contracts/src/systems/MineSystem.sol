@@ -15,6 +15,7 @@ contract MineSystem is System {
         Stamina.setStamina(playerEntityId, Stamina.getStamina(playerEntityId) - 10);
         Stamina.setLastUpdatedTime(playerEntityId, block.timestamp);
         GameToken.setAmount(playerEntityId, GameToken.getAmount(playerEntityId) + 100);
+        PlayerQuestS1.setGather(_msgSender(), PlayerQuestS1.getGather(_msgSender()) + 1);
         dropTreasure();
    }
 
@@ -37,6 +38,7 @@ contract MineSystem is System {
             } else {
                WorldResourceS1.setGod(WorldResourceS1.getGod() - 1);
                PlayerTreasureS1.setGod(_msgSender(), PlayerTreasureS1.getGod(_msgSender()) + 1);
+               PlayerQuestS1.setCommon(_msgSender(), PlayerQuestS1.getCommon(_msgSender()) + 1);
             }
         }
         else if(randomSeed < ARTIFACT_DROP) {
@@ -45,6 +47,7 @@ contract MineSystem is System {
             } else {
                WorldResourceS1.setArtifact(WorldResourceS1.getArtifact() - 1);
                PlayerTreasureS1.setArtifact(_msgSender(), PlayerTreasureS1.getArtifact(_msgSender()) + 1);
+               PlayerQuestS1.setArtifact(_msgSender(), PlayerQuestS1.getArtifact(_msgSender()) + 1);
             }
          }
         else if(randomSeed < MYSTICAL_DROP) {
@@ -53,6 +56,7 @@ contract MineSystem is System {
             } else {
                WorldResourceS1.setMystical(WorldResourceS1.getMystical() - 1);
                PlayerTreasureS1.setMystical(_msgSender(), PlayerTreasureS1.getMystical(_msgSender()) + 1);
+               PlayerQuestS1.setMystical(_msgSender(), PlayerQuestS1.getMystical(_msgSender()) + 1);
             }
         } else if(randomSeed < RARE_DROP) {
             if(WorldResourceS1.getRare() == 0) {
@@ -60,6 +64,7 @@ contract MineSystem is System {
             } else {
                WorldResourceS1.setRare(WorldResourceS1.getRare() - 1);
                PlayerTreasureS1.setRare(_msgSender(), PlayerTreasureS1.getRare(_msgSender()) + 1);
+               PlayerQuestS1.setRare(_msgSender(), PlayerQuestS1.getRare(_msgSender()) + 1);
             }
         } else if(randomSeed < COMMON_DROP) {
             if(WorldResourceS1.getCommon() == 0) {
@@ -67,6 +72,8 @@ contract MineSystem is System {
             } else {
                WorldResourceS1.setCommon(WorldResourceS1.getCommon() - 1);
                PlayerTreasureS1.setCommon(_msgSender(), PlayerTreasureS1.getCommon(_msgSender()) + 1);
+               PlayerQuestS1.setMystical(_msgSender(), PlayerQuestS1.getMystical(_msgSender()) + 1);
+               PlayerQuestS1.setMystical(_msgSender(), PlayerQuestS1.getMystical(_msgSender()) + 1);
             }
         }
         // bytes32 playerEntityId = Player._get(_msgSender());
