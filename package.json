@@ -1,5 +1,5 @@
 {
-  "name": "vv-public",
+  "name": "vv-monorepo-public",
   "private": true,
   "scripts": {
     "build:client": "cd packages/client && pnpm build",
