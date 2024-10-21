@@ -10,6 +10,4 @@ pragma solidity >=0.8.24;
  */
 interface IWorldSystem {
   function startNewDay() external;
-
-  function buyPotion() external;
 }

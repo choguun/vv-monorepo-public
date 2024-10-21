@@ -6,13 +6,8 @@ uint256 constant SEASON_PASS_MIN_PRICE = 0.03 ether;
 uint256 constant SEASON_PASS_PRICE_DECREASE_PER_SECOND = 0;
 uint256 constant SEASON_PASS_PRICE_DECREASE_DENOMINATOR = 10_000_000_000;
 uint256 constant SEASON_PASS_PURCHASE_MULTIPLIER_PERCENT = 100;
-uint256 constant SEASON_START_TIME = 1714579200;
 uint256 constant SEASON_PASS_MINT_DURATION = 3 days;
 uint256 constant SEASON_DURATION = 30 days;
-uint256 constant SEASON_PASS_PRIVATE_MATCH_LIMIT = 30;
-
-uint256 constant COST_CREATE_MATCH = 100 ether;
-uint256 constant MATCHES_PER_DAY_HARD_CAP = 2000;
 
 uint256 constant WINDOW = 604800; // number of seconds in a week
 uint256 constant SKYPOOL_SUPPLY = 100_000_000 ether; // tokens in Sky Pool
@@ -29,8 +24,10 @@ bytes14 constant SKY_KEY_NAMESPACE = "SkyKey";
 uint16 constant MAX_HP = 100;
 uint32 constant MAX_STAMINA = 1000;
 
-uint256 constant POTION_PRICE = 1000;
+uint64 constant POTION_PRICE = 5000;
 uint32 constant POTION_STAMINA = 300;
+
+uint64 constant PACK_PRICE = 20000;
 
 uint256 constant POINT_DAILY_LOG_IN = 20;
 uint256 constant POINT_DAILY_CHECK_IN = 20;

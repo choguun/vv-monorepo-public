@@ -6,11 +6,13 @@ pragma solidity >=0.8.24;
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { IAccountSystem } from "./IAccountSystem.sol";
 import { ICharacterSystem } from "./ICharacterSystem.sol";
+import { IInventorySystem } from "./IInventorySystem.sol";
 import { ILoginSystem } from "./ILoginSystem.sol";
 import { IMineSystem } from "./IMineSystem.sol";
 import { INameSystem } from "./INameSystem.sol";
 import { IQuestSystem } from "./IQuestSystem.sol";
 import { ISeasonPassSystem } from "./ISeasonPassSystem.sol";
+import { IShopSystem } from "./IShopSystem.sol";
 import { IWorldSystem } from "./IWorldSystem.sol";
 
 /**
@@ -24,10 +26,12 @@ interface IWorld is
   IBaseWorld,
   IAccountSystem,
   ICharacterSystem,
+  IInventorySystem,
   ILoginSystem,
   IMineSystem,
   INameSystem,
   IQuestSystem,
   ISeasonPassSystem,
+  IShopSystem,
   IWorldSystem
 {}

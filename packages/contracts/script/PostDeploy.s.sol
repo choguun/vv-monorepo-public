@@ -24,11 +24,11 @@ import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResou
 
 import { IWorld } from "../src/codegen/world/IWorld.sol";
 
-import { Admin, SkyPoolConfig, SeasonConfig, WorldResourceS1, WorldQuestS1, SeasonTimes, SeasonPassConfig } from "../src/codegen/index.sol";
+import { Admin, SkyPoolConfig, SeasonConfig, WorldResourceS1, WorldQuestS1, SeasonTimes, SeasonPassConfig, GoldRate } from "../src/codegen/index.sol";
 
 import { addressToEntity } from "../src/libraries/LibUtils.sol";
 
-import { SEASON_PASS_PRIVATE_MATCH_LIMIT, SEASON_START_TIME, SEASON_PASS_STARTING_PRICE, SEASON_PASS_MIN_PRICE, SEASON_PASS_PRICE_DECREASE_PER_SECOND, SEASON_PASS_PURCHASE_MULTIPLIER_PERCENT, SEASON_PASS_MINT_DURATION, SEASON_DURATION, COST_CREATE_MATCH, WINDOW, SKYPOOL_SUPPLY, SKY_KEY_TOKEN_ID, SEASON_PASS_NAMESPACE, ORB_NAMESPACE, SKY_KEY_NAMESPACE, SEASON_PASS_SYMBOL, SEASON_PASS_NAME } from "../constants.sol";
+import { SEASON_PASS_STARTING_PRICE, SEASON_PASS_MIN_PRICE, SEASON_PASS_PRICE_DECREASE_PER_SECOND, SEASON_PASS_PURCHASE_MULTIPLIER_PERCENT, SEASON_PASS_MINT_DURATION, SEASON_DURATION, WINDOW, SKYPOOL_SUPPLY, SKY_KEY_TOKEN_ID, SEASON_PASS_NAMESPACE, ORB_NAMESPACE, SKY_KEY_NAMESPACE, SEASON_PASS_SYMBOL, SEASON_PASS_NAME } from "../constants.sol";
 
 contract PostDeploy is Script {
   function run(address worldAddress) external {
@@ -51,7 +51,7 @@ contract PostDeploy is Script {
     world.installModule(new PuppetModule(), new bytes(0));
 
     // Global Configuration
-    SkyPoolConfig.setCost(COST_CREATE_MATCH);
+    // SkyPoolConfig.setCost(COST_CREATE_MATCH);
     SkyPoolConfig.setWindow(WINDOW);
 
     SeasonConfig.setSeason(1);
@@ -73,9 +73,9 @@ contract PostDeploy is Script {
 
     WorldQuestS1.setCheckin(18);
     WorldQuestS1.setLogin(18);
-    WorldQuestS1.setGather(300);
-    WorldQuestS1.setCommon(5);
-    WorldQuestS1.setRare(2);
+    WorldQuestS1.setGather(1000);
+    WorldQuestS1.setCommon(15);
+    WorldQuestS1.setRare(5);
     WorldQuestS1.setMystical(1);
     WorldQuestS1.setArtifact(1);
 
@@ -88,6 +88,9 @@ contract PostDeploy is Script {
     );
     SeasonTimes.setSeasonStart(block.timestamp);
     SeasonTimes.setSeasonEnd(block.timestamp + 30 days);
+
+    GoldRate.setRate(1000000000);
+    GoldRate.setUpdatedAt(block.timestamp);
 
     vm.stopBroadcast();
   }

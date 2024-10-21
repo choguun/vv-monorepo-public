@@ -17,8 +17,8 @@ import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/Encoded
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 library SeasonPass_Balances {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "", name: "SeasonPass_Balan", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x74620000000000000000000000000000536561736f6e506173735f42616c616e);
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "", name: "SeasonPass_Balan", typeId: RESOURCE_OFFCHAIN_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x6f740000000000000000000000000000536561736f6e506173735f42616c616e);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0020010020000000000000000000000000000000000000000000000000000000);
@@ -61,50 +61,6 @@ library SeasonPass_Balances {
   }
 
   /**
-   * @notice Get value.
-   */
-  function getValue(address account) internal view returns (uint256 value) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(account)));
-
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint256(bytes32(_blob)));
-  }
-
-  /**
-   * @notice Get value.
-   */
-  function _getValue(address account) internal view returns (uint256 value) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(account)));
-
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint256(bytes32(_blob)));
-  }
-
-  /**
-   * @notice Get value.
-   */
-  function get(address account) internal view returns (uint256 value) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(account)));
-
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint256(bytes32(_blob)));
-  }
-
-  /**
-   * @notice Get value.
-   */
-  function _get(address account) internal view returns (uint256 value) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(account)));
-
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint256(bytes32(_blob)));
-  }
-
-  /**
    * @notice Set value.
    */
   function setValue(address account, uint256 value) internal {
@@ -125,23 +81,50 @@ library SeasonPass_Balances {
   }
 
   /**
-   * @notice Set value.
+   * @notice Set the full data using individual values.
    */
   function set(address account, uint256 value) internal {
+    bytes memory _staticData = encodeStatic(value);
+
+    EncodedLengths _encodedLengths;
+    bytes memory _dynamicData;
+
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(uint160(account)));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((value)), _fieldLayout);
+    StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
 
   /**
-   * @notice Set value.
+   * @notice Set the full data using individual values.
    */
   function _set(address account, uint256 value) internal {
+    bytes memory _staticData = encodeStatic(value);
+
+    EncodedLengths _encodedLengths;
+    bytes memory _dynamicData;
+
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(uint160(account)));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((value)), _fieldLayout);
+    StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
+  }
+
+  /**
+   * @notice Decode the tightly packed blob of static data using this table's field layout.
+   */
+  function decodeStatic(bytes memory _blob) internal pure returns (uint256 value) {
+    value = (uint256(Bytes.getBytes32(_blob, 0)));
+  }
+
+  /**
+   * @notice Decode the tightly packed blobs using this table's field layout.
+   * @param _staticData Tightly packed static fields.
+   *
+   *
+   */
+  function decode(bytes memory _staticData, EncodedLengths, bytes memory) internal pure returns (uint256 value) {
+    (value) = decodeStatic(_staticData);
   }
 
   /**
