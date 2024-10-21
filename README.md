@@ -12,7 +12,7 @@
 - <b>packages/contracts</b>
 - npx mud tablegen
 - pnpm run build
-- pnpm run deploy
+- pnpm run deploy:basetestnet
 
 #### this project is using MUD Framework to develope fully on-chain game for smart contract
 - This on-chain is design system like ECS (Entity, Component, System)

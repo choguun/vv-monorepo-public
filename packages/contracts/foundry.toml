@@ -33,3 +33,8 @@ eth_rpc_url = "https://rpc.redstonechain.com"
 [profile.opbnbtestnet]
 eth_rpc_url = "https://opbnb-testnet-rpc.bnbchain.org"
 priority_fee = "5gwei"
+
+
+[profile.basetestnet]
+eth_rpc_url = "https://sepolia.base.org"
+priority_fee = "5gwei"
