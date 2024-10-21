@@ -15,8 +15,4 @@ contract WorldSystem is System {
       Stamina.set(playerEntityId, block.timestamp, MAX_STAMINA);
       Health.set(playerEntityId, block.timestamp, MAX_HP);
    }
-
-   function buyPotion() public {
-      
-   }
 }

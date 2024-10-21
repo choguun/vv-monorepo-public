@@ -24,6 +24,21 @@ export default defineWorld({
     ],
   },
   tables: {
+    ObjectTypeMetadata: {
+      schema: {
+        objectTypeId: "uint8",
+        isBlock: "bool",
+        isTool: "bool",
+        miningDifficulty: "uint16",
+        stackable: "uint8",
+        damage: "uint16",
+        durability: "uint24",
+      },
+      key: ["objectTypeId"],
+      codegen: {
+        storeArgument: true,
+      },
+    },
     /**
      * SkyPool settings:
      * - Creation cost of SkyPool matches.
@@ -203,45 +218,10 @@ export default defineWorld({
       },
     },
 
-    ReversePosition: {
-      schema: {
-        x: "int16",
-        y: "int16",
-        z: "int16",
-        entityId: "bytes32",
-      },
-      key: ["x", "y", "z"],
-      codegen: {
-        storeArgument: true,
-      },
-    },
-
-    InventoryTool: {
-      schema: {
-        toolEntityId: "bytes32",
-        ownerEntityId: "bytes32",
-      },
-      key: ["toolEntityId"],
-      codegen: {
-        storeArgument: true,
-      },
-    },
-
-    ReverseInventoryTool: {
-      schema: {
-        ownerEntityId: "bytes32",
-        toolEntityIds: "bytes32[]",
-      },
-      key: ["ownerEntityId"],
-      codegen: {
-        storeArgument: true,
-      },
-    },
-
     InventoryCount: {
       schema: {
         ownerEntityId: "bytes32",
-        objectTypeId: "uint8",
+        objectTypeId: "uint16",
         count: "uint16",
       },
       key: ["ownerEntityId", "objectTypeId"],
@@ -250,10 +230,13 @@ export default defineWorld({
       },
     },
 
+    /*
+     * object type, you own in your inventory
+     */
     InventoryObjects: {
       schema: {
         ownerEntityId: "bytes32",
-        objectTypeIds: "uint8[]",
+        objectTypeIds: "uint16[]",
       },
       key: ["ownerEntityId"],
       codegen: {
@@ -261,9 +244,13 @@ export default defineWorld({
       },
     },
 
+    /*
+     * slots of player inventory
+     */
     InventorySlots: {
       schema: {
         ownerEntityId: "bytes32",
+        numSlotsTotal: "uint16",
         numSlotsUsed: "uint16",
       },
       key: ["ownerEntityId"],
@@ -276,6 +263,7 @@ export default defineWorld({
       schema: {
         ownerEntityId: "bytes32",
         toolEntityId: "bytes32",
+        side: "uint8", // 0 = left, 1 = right, 2 = both
       },
       key: ["ownerEntityId"],
       codegen: {
@@ -318,19 +306,6 @@ export default defineWorld({
       },
     },
 
-    LastKnownPosition: {
-      schema: {
-        entityId: "bytes32",
-        x: "int16",
-        y: "int16",
-        z: "int16",
-      },
-      key: ["entityId"],
-      codegen: {
-        storeArgument: true,
-      },
-    },
-
     PlayerMetadata: {
       schema: {
         entityId: "bytes32",
@@ -349,6 +324,19 @@ export default defineWorld({
         entityId: "bytes32",
       },
       key: ["player"],
+      codegen: {
+        storeArgument: true,
+      },
+    },
+
+    Position: {
+      schema: {
+        entityId: "bytes32",
+        x: "int16",
+        y: "int16",
+        z: "int16",
+      },
+      key: ["entityId"],
       codegen: {
         storeArgument: true,
       },
@@ -421,22 +409,10 @@ export default defineWorld({
 
     SeasonPass_Balances: {
       key: ["account"],
+      type: "offchainTable",
       schema: {
         account: "address",
         value: "uint256",
-      },
-    },
-
-    Position: {
-      schema: {
-        entityId: "bytes32",
-        x: "int16",
-        y: "int16",
-        z: "int16",
-      },
-      key: ["entityId"],
-      codegen: {
-        storeArgument: true,
       },
     },
 
@@ -446,6 +422,18 @@ export default defineWorld({
         amount: "uint64",
       },
       key: ["entityId"],
+    },
+
+    /**
+     * GoldRate settings:
+     * - Native token to Gold(USD Peg) 20,000 Gold = 1 USD.
+     */
+    GoldRate: {
+      key: [],
+      schema: {
+        rate: "uint256", // 1 Native Token = x Gold
+        updatedAt: "uint256",
+      },
     },
   },
 });

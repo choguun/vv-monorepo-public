@@ -5,8 +5,8 @@ import { System } from "@latticexyz/world/src/System.sol";
 import { Player } from "../codegen/tables/Player.sol";
 import { PlayerMetadata } from "../codegen/tables/PlayerMetadata.sol";
 import { Position } from "../codegen/tables/Position.sol";
-import { LastKnownPosition } from "../codegen/tables/LastKnownPosition.sol";
-import { ReversePosition } from "../codegen/tables/ReversePosition.sol";
+// import { LastKnownPosition } from "../codegen/tables/LastKnownPosition.sol";
+// import { ReversePosition } from "../codegen/tables/ReversePosition.sol";
 import { Health } from "../codegen/tables/Health.sol";
 import { Stamina } from "../codegen/tables/Stamina.sol";
 import { PlayerActivity } from "../codegen/tables/PlayerActivity.sol";
@@ -21,7 +21,7 @@ contract LoginSystem is System {
     require(PlayerMetadata._getIsLoggedOff(playerEntityId), "LoginSystem: player already logged in");
 
     Position._set(playerEntityId, respawnCoord.x, respawnCoord.y, respawnCoord.z);
-    ReversePosition._set(respawnCoord.x, respawnCoord.y, respawnCoord.z, playerEntityId);
+    // ReversePosition._set(respawnCoord.x, respawnCoord.y, respawnCoord.z, playerEntityId);
 
     PlayerMetadata._setIsLoggedOff(playerEntityId, false);
     PlayerActivity._set(playerEntityId, block.timestamp);
