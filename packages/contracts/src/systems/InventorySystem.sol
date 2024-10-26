@@ -2,7 +2,7 @@
 pragma solidity >=0.8.24;
 import { System } from "@latticexyz/world/src/System.sol";
 
-import { PlayerPointS1, PlayerQuestS1, PlayerTreasureS1, Player, Equipped, Stamina, InventoryCount } from "../codegen/index.sol";
+import { PlayerPointS1, PlayerQuestS1, PlayerTreasureS1, Player, Equipped, Stamina, InventoryObjects, InventoryCount } from "../codegen/index.sol";
 import { addressToEntity } from "../libraries/LibUtils.sol";
 import { STAMINA_POTION_ID, WOODEN_PICK_ID, SEASON1_PACK_ID } from "../ObjectTypeIds.sol";
 
@@ -32,18 +32,39 @@ contract InventorySystem is System {
     require(playerEntityId != bytes32(0), "Player does not exist");
 
     if (objectID == STAMINA_POTION_ID) {
-      // Increase stamina by 200
       require(InventoryCount._get(addressToEntity(_msgSender()), STAMINA_POTION_ID) > 0, "Not enough potions");
       InventoryCount._set(addressToEntity(_msgSender()), STAMINA_POTION_ID, InventoryCount._get(addressToEntity(_msgSender()), STAMINA_POTION_ID) - 1);
 
-      Stamina.setStamina(playerEntityId, Stamina.getStamina(playerEntityId) + 200);
+      if(Stamina.getStamina(playerEntityId) > 800) {
+        Stamina.setStamina(playerEntityId, 1000);
+      } else {
+        Stamina.setStamina(playerEntityId, Stamina.getStamina(playerEntityId) + 200);
+      }
     } else if(objectID == SEASON1_PACK_ID) {
-      // Open the pack
-      require(InventoryCount._get(addressToEntity(_msgSender()), SEASON1_PACK_ID) > 0, "Not enough potions");
-      InventoryCount._set(addressToEntity(_msgSender()), SEASON1_PACK_ID, InventoryCount._get(addressToEntity(_msgSender()), SEASON1_PACK_ID) - 1);
-
-      InventoryCount._set(addressToEntity(_msgSender()), STAMINA_POTION_ID, InventoryCount._get(addressToEntity(_msgSender()), STAMINA_POTION_ID) + 5);
-      InventoryCount._set(addressToEntity(_msgSender()), SEASON1_PACK_ID, InventoryCount._get(addressToEntity(_msgSender()), SEASON1_PACK_ID) + 2);
+      openPack();
     }
+  }
+
+  function openPack() public {
+    bytes32 playerEntityId = Player._get(_msgSender());
+    require(playerEntityId != bytes32(0), "Player does not exist");
+
+    require(InventoryCount._get(playerEntityId, SEASON1_PACK_ID) > 0, "Not enough pack");
+
+    InventoryCount._set(playerEntityId, SEASON1_PACK_ID, InventoryCount._get(playerEntityId, SEASON1_PACK_ID) - 1);
+
+    uint16[] memory currentInventory = InventoryObjects._getObjectTypeIds(playerEntityId);
+    uint16[] memory newInventory = new uint16[](currentInventory.length + 1); // 2 if have woonden pick
+
+    for (uint256 i = 0; i < currentInventory.length; i++) {
+        newInventory[i] = currentInventory[i];
+    }
+
+    newInventory[currentInventory.length] = STAMINA_POTION_ID;
+    // newInventory[currentInventory.length+1] = WOODEN_PICK_ID;
+    InventoryObjects._setObjectTypeIds(playerEntityId, newInventory);
+
+    InventoryCount._set(playerEntityId, STAMINA_POTION_ID, InventoryCount._get(playerEntityId, STAMINA_POTION_ID) + 8);
+    // InventoryCount._set(playerEntityId, WOODEN_PICK_ID, InventoryCount._get(playerEntityId, WOODEN_PICK_ID) + 0);
   }
 }

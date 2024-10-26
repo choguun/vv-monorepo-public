@@ -14,6 +14,4 @@ interface IShopSystem {
   function buyPack() external;
 
   function buyGold() external payable;
-
-  function openPack() external;
 }

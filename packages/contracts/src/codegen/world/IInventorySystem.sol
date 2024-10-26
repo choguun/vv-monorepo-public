@@ -14,4 +14,6 @@ interface IInventorySystem {
   function equipTool(uint32 objectTypeId, uint8 side) external;
 
   function useItem(uint16 objectID) external;
+
+  function openPack() external;
 }

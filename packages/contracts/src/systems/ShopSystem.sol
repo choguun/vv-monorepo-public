@@ -60,27 +60,4 @@ contract ShopSystem is System {
 
     GameToken.setAmount(playerEntityId, GameToken.getAmount(playerEntityId) + uint64(goldAmount));
   }
-
-  function openPack() public {
-    bytes32 playerEntityId = Player._get(_msgSender());
-    require(playerEntityId != bytes32(0), "Player does not exist");
-
-    require(InventoryCount._get(playerEntityId, SEASON1_PACK_ID) > 0, "Not enough pack");
-
-    InventoryCount._set(playerEntityId, SEASON1_PACK_ID, InventoryCount._get(playerEntityId, SEASON1_PACK_ID) - 1);
-
-    uint16[] memory currentInventory = InventoryObjects._getObjectTypeIds(playerEntityId);
-    uint16[] memory newInventory = new uint16[](currentInventory.length + 2);
-
-    for (uint256 i = 0; i < currentInventory.length; i++) {
-        newInventory[i] = currentInventory[i];
-    }
-
-    newInventory[currentInventory.length-1] = STAMINA_POTION_ID;
-    newInventory[currentInventory.length] = WOODEN_PICK_ID;
-    InventoryObjects._setObjectTypeIds(playerEntityId, newInventory);
-
-    InventoryCount._set(playerEntityId, STAMINA_POTION_ID, InventoryCount._get(playerEntityId, STAMINA_POTION_ID) + 5);
-    InventoryCount._set(playerEntityId, WOODEN_PICK_ID, InventoryCount._get(playerEntityId, WOODEN_PICK_ID) + 2);
-  }
 }
