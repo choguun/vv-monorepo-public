@@ -22,6 +22,8 @@ import { TopRight } from "./TopRight";
 import { Transactions } from "./Transactions";
 import { WelcomeToSkyStrifeModal } from "./WelcomeModal/WelcomeToSkyStrifeModal";
 import { WorldResourceSection } from "./WorldResourceSection";
+import { useBurnerBalance } from "./hooks/useBalance";
+import { SessionWalletSection } from "./SessionWalletSection";
 
 export const UIRoot = () => {
   const [openCharacterModal, setOpenCharacterModal] = useState(false);
@@ -38,7 +40,7 @@ export const UIRoot = () => {
 
   return (
     <div className="flex h-screen">
-      <div className="h-screen flex flex-col grow">
+      <div className="flex flex-col grow">
         <Header />
         <div
           style={{
@@ -50,7 +52,7 @@ export const UIRoot = () => {
           }}
           className="fixed top-0 left-0 h-screen w-screen bg-cover"
         />
-        <div className="grow px-8 py-6 flex flex-col">
+        <div className="grow px-8 py-6 flex flex-col overflow-y-auto">
           <div className="h-6" />
           <div>
             <PlayerPointSection />
@@ -71,10 +73,13 @@ export const UIRoot = () => {
             <SeasonTimer />
           </div>
           <WorldResourceSection />
+          {/* {noSessionWalletBalance && ( */}
+          <SessionWalletSection />
+          {/* )} */}
           <CharacterPlayerSection
             setOpenCharacterModal={setOpenCharacterModal}
           />
-          {/* <MatchTable /> */}
+          <div className="h-2" />
         </div>
       </div>
       <InventorySidebar />

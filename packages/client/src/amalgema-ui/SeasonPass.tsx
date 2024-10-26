@@ -8,12 +8,11 @@ import { DateTime, Duration } from "luxon";
 import { twMerge } from "tailwind-merge";
 import { Hex, formatEther } from "viem";
 
+import { STARTER_PACK_PRICE } from "../constants";
 import { useAmalgema } from "../hooks/useAmalgema";
 
-import { ReadOnlyTextInput } from "./common";
 import { PromiseButton } from "./hooks/PromiseButton";
-import { useMainWalletBalance } from "./hooks/useBalance";
-import { useSeasonPassExternalWallet } from "./hooks/useSeasonPass";
+import { useMainWalletBalance, useGoldBalance } from "./hooks/useBalance";
 import { useSeasonPassPrice } from "./hooks/useSeasonPassPrice";
 import { Modal } from "./Modal";
 import { SeasonPassImg } from "./SeasonPassImg";
@@ -76,24 +75,15 @@ export function SeasonPass({ account }: { account?: Hex }) {
   });
 
   const mainWalletBalance = useMainWalletBalance();
+  const goldBalance = useGoldBalance();
 
-  const seasonStart = DateTime.fromSeconds(
-    Number(seasonTimes?.seasonStart ?? 0n)
-  );
-  const seasonEnd = DateTime.fromSeconds(Number(seasonTimes?.seasonEnd ?? 0n));
-
-  const hasSeasonPass = useSeasonPassExternalWallet();
-  const price = useSeasonPassPrice(BigInt(Math.floor(now)));
+  const price = STARTER_PACK_PRICE; // useSeasonPassPrice(BigInt(Math.floor(now)));
   const { nativeCurrency } = publicClient.chain;
 
-  const canBuy = mainWalletBalance?.value && mainWalletBalance.value >= price;
+  const canBuy = goldBalance >= price;
 
   let disabledMessage = "";
-  if (!canBuy) disabledMessage = "not enough funds";
-
-  // const privateMatchLimit =
-  //   useComponentValue(SeasonPassPrivateMatchLimit, singletonEntity)?.value ??
-  //   0n;
+  if (!canBuy) disabledMessage = "not enough gold. Please buy gold.";
 
   const formatEthPrice = useCallback(
     (price: bigint) => {
@@ -117,155 +107,94 @@ export function SeasonPass({ account }: { account?: Hex }) {
         </div>
       </div>
       <div className="flex flex-col items-start gap-3 self-stretch p-4">
-        {hasSeasonPass ? (
-          <div className="flex items-center gap-3 self-stretch">
-            <SeasonPassImg className="w-[100px]" />
-            <div className="frame_530 flex flex-col items-start">
-              <Heading className="text-ss-text-default"> Starter Pack</Heading>
-              <Caption className="text-ss-text-light">
-                You have the Starter Pack for this Season!
-              </Caption>
-            </div>
+        <div className="flex items-center gap-3 self-stretch">
+          <SeasonPassImg className="w-[100px]" colored={false} />
+          <div className="frame_530 flex flex-col items-start">
+            <Heading className="text-ss-text-default">Starter Pack</Heading>
+            <Caption className="text-ss-text-light">
+              Buy a Starter Pack to get special in-game item!
+            </Caption>
           </div>
-        ) : (
-          <div className="flex items-center gap-3 self-stretch">
-            <SeasonPassImg className="w-[100px]" colored={false} />
-            <div className="frame_530 flex flex-col items-start">
-              <Heading className="text-ss-text-default">Starter Pack</Heading>
-              <Caption className="text-ss-text-light">
-                Buy a Starter Pack to get special in-game item!
-              </Caption>
-            </div>
-          </div>
-        )}
-
-        {!hasSeasonPass ? (
-          <Modal
-            isOpen={modalOpen}
-            setOpen={setModalOpen}
-            title={`Starter Pack`}
-            trigger={
+        </div>
+        <Modal
+          isOpen={modalOpen}
+          setOpen={setModalOpen}
+          title={`Starter Pack`}
+          trigger={
+            <Button
+              style={{
+                transition: "all 0.1s ease-in-out",
+                transform: enlarge ? "scale(1.2)" : "scale(1)",
+              }}
+              buttonType="primary"
+              size="md"
+              className="w-full"
+              disabled={!account}
+            >
+              buy - {price.toLocaleString()} Gold
+            </Button>
+          }
+          footer={
+            <div className="flex space-x-4 w-full">
               <Button
-                style={{
-                  transition: "all 0.1s ease-in-out",
-                  transform: enlarge ? "scale(1.2)" : "scale(1)",
+                onClick={() => setModalOpen(false)}
+                buttonType="tertiary"
+                className="w-full"
+              >
+                cancel
+              </Button>
+              <PromiseButton
+                disabled={!canBuy}
+                promise={async () => {
+                  if (!account) return;
+
+                  const tx = await executeSystemWithExternalWallet({
+                    systemCall: "buyPack",
+                    systemId: "Buy Pack",
+                    args: [[], { account }],
+                  });
+                  if (tx) await waitForTransaction(tx);
                 }}
-                buttonType="primary"
+                buttonType="secondary"
                 size="md"
                 className="w-full"
-                disabled={!account}
               >
-                buy - {formatEthPrice(price)}
-              </Button>
-            }
-            footer={
-              <div className="flex space-x-4 w-full">
-                <Button
-                  onClick={() => setModalOpen(false)}
-                  buttonType="tertiary"
-                  className="w-full"
-                >
-                  cancel
-                </Button>
-                <PromiseButton
-                  disabled={!canBuy}
-                  promise={async () => {
-                    if (!account) return;
+                {canBuy
+                  ? `buy - ${price.toLocaleString()} Gold`
+                  : disabledMessage}
+              </PromiseButton>
+            </div>
+          }
+        >
+          <div className="flex space-x-6">
+            <div className="flex flex-col items-center justify-around border border-ss-stroke bg-white w-fit p-2 rounded-md">
+              <SeasonPassImg className="w-[180px]" />
+            </div>
 
-                    const tx = await executeSystemWithExternalWallet({
-                      systemCall: "buySeasonPass",
-                      systemId: "Buy Season Pass",
-                      args: [[account as Hex], { account, value: price }],
-                    });
-                    if (tx) await waitForTransaction(tx);
-                  }}
-                  buttonType="secondary"
-                  size="md"
-                  className="w-full"
-                >
-                  {canBuy ? `buy - ${formatEthPrice(price)}` : disabledMessage}
-                </PromiseButton>
-              </div>
-            }
-          >
-            <div className="flex space-x-6">
-              <div className="flex flex-col items-center justify-around border border-ss-stroke bg-white w-fit p-2 rounded-md">
-                <SeasonPassImg className="w-[180px]" />
-              </div>
-
-              <div className="grow flex flex-col justify-between">
-                <ul className="list-disc list-inside text-ss-text-light p-4">
-                  <li>Special Starter Pack for VoxelWorld.</li>
-                  <li>Special In-game Items</li>
-                  <ul className="pl-8 list-disc list-inside">
-                    <li>1 Normal PickAxe</li>
-                    <li>1 Metal PickAxe</li>
-                    <li>5 Normal Stamina Potions</li>
-                  </ul>
-                  <li>Extra Inventory</li>
-                  {/* <li>Exclusive maps from the current season.</li>
-                  <li>Access to all in-game Heroes.</li> */}
+            <div className="grow flex flex-col justify-between">
+              <ul className="list-disc list-inside text-ss-text-light p-4">
+                <li>Special Starter Pack for VoxelWorld.</li>
+                <li>Special In-game Items</li>
+                <ul className="pl-8 list-disc list-inside">
+                  {/* <li>2 Wooden PickAxe</li> */}
+                  <li>8 Stamina Potions</li>
                 </ul>
-              </div>
-
-              {/* <div className="grow flex flex-col justify-between">
-                <div className="flex justify-between items-center px-3 py-2 bg-ss-bg-2">
-                  <span className="text-ss-text-x-light">Season Starts</span>
-                  <span>{seasonStart.toFormat("LLL dd")}</span>
-                </div>
-
-                <div className="flex justify-between items-center px-3 py-2 bg-ss-bg-2">
-                  <span className="text-ss-text-x-light">Minting Ends</span>
-                  <span>{DateTime.fromSeconds(mintCutoff).toFormat("LLL dd")}</span>
-                </div>
-
-                <div className="flex justify-between items-center px-3 py-2 bg-ss-bg-2">
-                  <span className="text-ss-text-x-light">Season Ends</span>
-                  <span>{seasonEnd.toFormat("LLL dd")}</span>
-                </div>
-              </div> */}
-            </div>
-
-            {/* <div className="h-8" /> */}
-
-            {/* <WarningSection>
-              The Season Pass is soulbound (non-transferable) and can only be minted once per account. Any offers to buy
-              or sell VoxelWorld Season Passes are fraudulent.
-            </WarningSection> */}
-
-            {/* <div className="h-4" /> */}
-            {/* 
-            <Body className="text-ss-text-default">
-              The <span className="font-bold">VoxelWorld Season Pass</span>, for {SEASON_NAME}, gives you access to
-              exclusive perks and features:
-            </Body>
-
-            <ul className="list-disc list-inside text-ss-text-light p-4">
-              <li>Access to exclusive free matches summoned from the Sky Pool.</li>
-              <li>Unlock additional features for creating matches.</li>
-              <ul className="pl-8 list-disc list-inside">
-                <li>
-                  Create private matches with a custom access list{" "}
-                  <strong>(limited to {privateMatchLimit.toString()} private matches per Pass)</strong>
-                </li>
-                <li>Set entrance fees and custom rewards.</li>
+                {/* <li>Extra Inventory</li> */}
               </ul>
-              <li>Exclusive maps from the current season.</li>
-              <li>Access to all in-game Heroes.</li>
-            </ul> */}
-
-            <div className="h-4" />
-
-            <div className="flex w-full space-x-4">
-              <div className="flex justify-between items-center px-3 py-2 bg-ss-bg-2 grow">
-                <span className="text-ss-text-x-light">Price</span>
-                <span className="font-mono">{formatEthPrice(price)}</span>
-              </div>
             </div>
-          </Modal>
-        ) : (
-          <></>
-        )}
+          </div>
+
+          <div className="h-4" />
+
+          <div className="flex w-full space-x-4">
+            <div className="flex justify-between items-center px-3 py-2 bg-ss-bg-2 grow">
+              <span className="text-ss-text-x-light">Price</span>
+              <span className="font-mono">
+                {STARTER_PACK_PRICE.toLocaleString()}
+              </span>
+            </div>
+          </div>
+        </Modal>
 
         {seasonPassSales.length > 0 && (
           <div className="w-full">
@@ -305,29 +234,15 @@ export function SeasonPass({ account }: { account?: Hex }) {
         </div>
       </div>
       <div className="flex flex-col items-start gap-3 self-stretch p-4">
-        {hasSeasonPass ? (
-          <div className="flex items-center gap-3 self-stretch">
-            <SeasonPassImg className="w-[100px]" />
-            <div className="frame_530 flex flex-col items-start">
-              <Heading className="text-ss-text-default">Season Pass</Heading>
-              <Caption className="text-ss-text-light">
-                Minting has ended. You are a Season Pass holder this season!
-              </Caption>
-            </div>
+        <div className="flex items-center gap-3 self-stretch">
+          <SeasonPassImg className="w-[100px]" colored={false} />
+          <div className="frame_530 flex flex-col items-start">
+            <Heading className="text-ss-text-default">Season Pass</Heading>
+            <Caption className="text-ss-text-light">
+              Minting has ended. You are not a Season Pass holder this season.
+            </Caption>
           </div>
-        ) : (
-          <div className="flex items-center gap-3 self-stretch">
-            <SeasonPassImg className="w-[100px]" colored={false} />
-            <div className="frame_530 flex flex-col items-start">
-              <Heading className="text-ss-text-default">Season Pass</Heading>
-              <Caption className="text-ss-text-light">
-                Minting has ended. You are not a Season Pass holder this season.
-              </Caption>
-            </div>
-          </div>
-        )}
-
-        {hasSeasonPass && <RemainingPrivateMatches />}
+        </div>
       </div>
     </div>
   );

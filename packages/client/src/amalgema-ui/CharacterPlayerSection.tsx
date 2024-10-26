@@ -1,12 +1,19 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useRef } from "react";
 
 import { useComponentValue } from "@latticexyz/react";
 import { Entity } from "@latticexyz/recs";
+import { encodeSystemCallFrom } from "@latticexyz/world/internal";
 import { useGLTF, OrbitControls } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
+import IWorldAbi from "contracts/out/IWorld.sol/IWorld.abi.json";
+import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { Group } from "three";
+import { encodeFunctionData, maxUint256 } from "viem";
 
+import { TimeDelegationAbi } from "../abis";
+import { LOGIN_SYSTEM_ID, TIMEBOUND_DELEGATION } from "../constants";
 import { characterModels } from "../constants";
 import { useAmalgema } from "../hooks/useAmalgema";
 import { addressToEntityID } from "../mud/setupNetwork";
@@ -55,13 +62,22 @@ export function CharacterPlayerSection({
   setOpenCharacterModal: (open: boolean) => void;
 }) {
   const {
+    externalWorldContract,
     network: {
-      components: { Character },
+      components: { Character, Name },
+      worldContract,
+      waitForTransaction,
+      walletClient,
     },
-    executeSystemWithExternalWallet,
+    externalWalletClient,
+    utils: { refreshBalance, hasTimeDelegation },
   } = useAmalgema() as any;
 
   const { address } = useExternalAccount();
+  const hasDelegation = hasTimeDelegation(
+    externalWalletClient.account.address,
+    walletClient.account.address
+  );
   const navigate = useNavigate();
 
   const character =
@@ -70,24 +86,35 @@ export function CharacterPlayerSection({
       address ? addressToEntityID(address) : ("0" as Entity)
     )?.value ?? 0;
 
-  // TODO: Login to the game
-  // TODO: go to main game page
-  const handlePlaytoLogin = () => {
+  const name =
+    useComponentValue(
+      Name,
+      address ? addressToEntityID(address) : ("0" as Entity)
+    )?.value ?? 0;
+
+  const handlePlaytoLogin = async () => {
     try {
       const position: VoxelCoord = { x: 1, y: 1, z: 1 };
-
-      executeSystemWithExternalWallet({
-        systemCall: "loginPlayer",
-        systemId: "login",
-        args: [[position], { account: address }],
-      });
-
-      localStorage.setItem("character-id", character.toString());
+      toast.loading("Login...");
+      const hash = await worldContract.write.callFrom(
+        encodeSystemCallFrom({
+          abi: IWorldAbi,
+          from: externalWalletClient.account.address,
+          systemId: LOGIN_SYSTEM_ID,
+          functionName: "loginPlayer",
+          args: [position],
+        })
+      );
+      await waitForTransaction(hash);
+      toast.success("Login");
+      localStorage.setItem("vv-character-id", character.toString());
+      localStorage.setItem("vv-username", name.toString());
 
       setInterval(() => {
         navigate("/world");
       }, 2000);
     } catch (e) {
+      toast.error(e.message);
       console.error(e);
     }
   };
@@ -125,14 +152,43 @@ export function CharacterPlayerSection({
             <div className="border border-black border-solid rounded-xl w-full h-[300px] text-center flex justify-center items-center">
               <span className="text-3xl font-black">N/A</span>
             </div>
-            <Button
-              buttonType="primary"
-              className="cursor-pointer"
-              onClick={handlePlaytoLogin}
-              disabled={!character}
-            >
-              PLAY
-            </Button>
+            {!hasDelegation ? (
+              <Button
+                buttonType="secondary"
+                className="ml-5"
+                onClick={async () => {
+                  await externalWorldContract.write.registerDelegation(
+                    [
+                      walletClient.account.address,
+                      TIMEBOUND_DELEGATION,
+                      encodeFunctionData({
+                        abi: TimeDelegationAbi,
+                        functionName: "initDelegation",
+                        args: [walletClient.account.address, maxUint256],
+                      }),
+                    ],
+                    {
+                      account: externalWalletClient.account.address,
+                    }
+                  );
+
+                  setInterval(() => {
+                    window.location.reload();
+                  }, 1000);
+                }}
+              >
+                Delegate
+              </Button>
+            ) : (
+              <Button
+                buttonType="primary"
+                className="cursor-pointer"
+                onClick={handlePlaytoLogin}
+                disabled={!character}
+              >
+                PLAY
+              </Button>
+            )}
             <div></div>
             <div></div>
           </div>

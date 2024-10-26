@@ -45,10 +45,10 @@ export function QuestModal({ setOpen, isOpen }: QuestModalProps) {
     PlayerQuestFinishedS1,
     address ? addressToEntityID(address) : ("0" as Entity)
   );
-  console.log(playerQuestFinishedS1);
+  // console.log(playerQuestFinishedS1);
 
   const handleClaim = async (type: QuestTypes) => {
-    console.log("handleClaim");
+    // console.log("handleClaim");
     await executeSystemWithExternalWallet({
       systemCall: "confirmFinishedQuest",
       systemId: "Clear Quest",
@@ -139,7 +139,7 @@ export function QuestModal({ setOpen, isOpen }: QuestModalProps) {
         </div>
         <div className="px-10 py-4 border-2 border-black border-solid rounded-md inline-block w-full mt-2">
           <span className="text-xl">
-            Find Rare Treasure {playerQuestS1?.rare}/{worldQuestS1?.rare}
+            Find Elite Treasure {playerQuestS1?.rare}/{worldQuestS1?.rare}
           </span>
           <div className="float-right">
             <span className="text-xl font-black mr-5 text-green-700">
@@ -157,7 +157,7 @@ export function QuestModal({ setOpen, isOpen }: QuestModalProps) {
         </div>
         <div className="px-10 py-4 border-2 border-black border-solid rounded-md inline-block w-full mt-2">
           <span className="text-xl">
-            Find Mystical Treasure {playerQuestS1?.mystical}/
+            Find Epic Treasure {playerQuestS1?.mystical}/
             {worldQuestS1?.mystical}
           </span>
           <div className="float-right">
@@ -176,7 +176,7 @@ export function QuestModal({ setOpen, isOpen }: QuestModalProps) {
         </div>
         <div className="px-10 py-4 border-2 border-black border-solid rounded-md inline-block w-full mt-2">
           <span className="text-xl">
-            Find Artifact Treasure {playerQuestS1?.artifact}/
+            Find Legendary Treasure {playerQuestS1?.artifact}/
             {worldQuestS1?.artifact}
           </span>
           <div className="float-right">

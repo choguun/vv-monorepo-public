@@ -159,14 +159,16 @@ export function CharacterModal({ setOpen, isOpen }: CharacterModalProps) {
   };
 
   const registerCharacter = async (type: CharacterTypes) => {
-    // console.log('registerCharacter');
-    // console.log(type);
     await executeSystemWithExternalWallet({
       systemCall: "registerCharacter",
       systemId: "Create Character",
       args: [[type], { account: address }],
     });
     setOpen(false);
+
+    setInterval(() => {
+      window.location.reload();
+    }, 1500);
   };
 
   return (

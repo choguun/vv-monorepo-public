@@ -7,10 +7,11 @@ import { DateTime, Duration } from "luxon";
 import { Hex, formatEther } from "viem";
 
 import { SEASON_NAME } from "../constants";
+import { PIRATE_SKIN_PRICE } from "../constants";
 import { useAmalgema } from "../hooks/useAmalgema";
 
 import { PromiseButton } from "./hooks/PromiseButton";
-import { useMainWalletBalance } from "./hooks/useBalance";
+import { useMainWalletBalance, useGoldBalance } from "./hooks/useBalance";
 import { useSeasonPassExternalWallet } from "./hooks/useSeasonPass";
 import { useSeasonPassPrice } from "./hooks/useSeasonPassPrice";
 import { Modal } from "./Modal";
@@ -72,6 +73,7 @@ export function CharacterSkinSale({ account }: { account?: Hex }) {
   });
 
   const mainWalletBalance = useMainWalletBalance();
+  const goldBalance = useGoldBalance();
 
   const seasonStart = DateTime.fromSeconds(
     Number(seasonTimes?.seasonStart ?? 0n)
@@ -83,10 +85,10 @@ export function CharacterSkinSale({ account }: { account?: Hex }) {
   const { nativeCurrency } = publicClient.chain;
 
   // const canBuy = mainWalletBalance?.value && mainWalletBalance.value >= price;
-  const canBuy = false;
+  const canBuy = goldBalance >= price;
 
   let disabledMessage = "";
-  if (!canBuy) disabledMessage = "not enough funds";
+  if (!canBuy) disabledMessage = "not enough gold. Please buy gold.";
 
   const formatEthPrice = useCallback(
     (price: bigint) => {
@@ -149,7 +151,7 @@ export function CharacterSkinSale({ account }: { account?: Hex }) {
                 disabled={true}
                 // disabled={!account}
               >
-                buy - {formatEthPrice(price)}
+                buy - {PIRATE_SKIN_PRICE.toLocaleString()} Gold
               </Button>
             }
             footer={
@@ -246,7 +248,9 @@ export function CharacterSkinSale({ account }: { account?: Hex }) {
             <div className="flex w-full space-x-4">
               <div className="flex justify-between items-center px-3 py-2 bg-ss-bg-2 grow">
                 <span className="text-ss-text-x-light">Price</span>
-                <span className="font-mono">{formatEthPrice(price)}</span>
+                <span className="font-mono">
+                  {PIRATE_SKIN_PRICE.toLocaleString()} Gold
+                </span>
               </div>
             </div>
           </Modal>

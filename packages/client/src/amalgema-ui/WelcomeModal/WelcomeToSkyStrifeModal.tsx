@@ -39,8 +39,7 @@ export function WelcomeToSkyStrifeModal() {
     components: { Name },
     externalWalletClient,
     executeSystemWithExternalWallet,
-    waitForTransaction,
-    network: { networkConfig, walletClient, worldContract },
+    network: { networkConfig, walletClient, worldContract, waitForTransaction },
     utils: { refreshBalance, hasTimeDelegation },
   } = useAmalgema();
 
@@ -50,9 +49,10 @@ export function WelcomeToSkyStrifeModal() {
   const [skip, setSkip] = useState(false);
 
   const { address } = useExternalAccount();
-  const hasDelegation = address
-    ? hasTimeDelegation(address, walletClient.account.address)
-    : false;
+  const hasDelegation = hasTimeDelegation(
+    externalWalletClient.account.address,
+    walletClient.account.address
+  );
   const sessionWalletAddress = walletClient.account.address;
 
   const name = useComponentValue(
@@ -75,6 +75,7 @@ export function WelcomeToSkyStrifeModal() {
   );
   const [alreadyCreateAccount, setAlreadyCreateAccount] = useState(false);
   const [alreadyDelegated, setAlreadyDelegated] = useState(false);
+  const [delegateText, setDelegateText] = useState("Delegate");
   const { nameValid, nameValidityMessage } = useNameIsValid(newName);
 
   useEffect(() => {
@@ -245,7 +246,9 @@ export function WelcomeToSkyStrifeModal() {
                 <div className="flex flex-col m-2">
                   <PromiseButton
                     buttonType="primary"
-                    disabled={hasDelegation || !alreadyCreateAccount}
+                    disabled={
+                      hasDelegation || !alreadyCreateAccount || alreadyDelegated
+                    }
                     promise={async () => {
                       if (!externalWorldContract) return;
                       if (
@@ -256,23 +259,15 @@ export function WelcomeToSkyStrifeModal() {
 
                       const account = externalWalletClient.account;
 
-                      console.log(walletClient.account.address);
-                      console.log(externalWorldContract);
-                      console.log(worldContract);
-
                       const result =
                         await externalWorldContract.write.registerDelegation(
                           [
                             walletClient.account.address,
-                            SYSTEMBOUND_DELEGATION,
+                            TIMEBOUND_DELEGATION,
                             encodeFunctionData({
-                              abi: SystemDelegationAbi,
+                              abi: TimeDelegationAbi,
                               functionName: "initDelegation",
-                              args: [
-                                walletClient.account.address,
-                                NAME_SYSTEM_ID,
-                                maxUint256,
-                              ],
+                              args: [walletClient.account.address, maxUint256],
                             }),
                           ],
                           {
@@ -280,10 +275,11 @@ export function WelcomeToSkyStrifeModal() {
                           }
                         );
                       setAlreadyDelegated(true);
+                      setDelegateText("Delegated");
                       return result;
                     }}
                   >
-                    Delegate
+                    {delegateText}
                   </PromiseButton>
                 </div>
               </div>
@@ -308,7 +304,7 @@ export function WelcomeToSkyStrifeModal() {
                   const hash = await worldContract.write.callFrom(
                     encodeSystemCallFrom({
                       abi: IWorldAbi,
-                      from: address,
+                      from: externalWalletClient.account.address,
                       systemId: NAME_SYSTEM_ID,
                       functionName: "setName",
                       args: [newName],

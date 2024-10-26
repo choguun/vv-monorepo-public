@@ -1,18 +1,37 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 
 import { useComponentValue } from "@latticexyz/react";
+import { Entity } from "@latticexyz/recs";
+import { encodeSystemCallFrom } from "@latticexyz/world/internal";
 import { ConnectButton } from "@particle-network/connectkit";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { Hex, formatEther, parseEther } from "viem";
+import IWorldAbi from "contracts/out/IWorld.sol/IWorld.abi.json";
+import {
+  Hex,
+  encodeFunctionData,
+  hexToString,
+  maxUint256,
+  padHex,
+  formatEther,
+  parseEther,
+} from "viem";
 
+import { TimeDelegationAbi, SystemDelegationAbi } from "../abis";
 import { NATIVE_SYMBOL } from "../constants";
+import {
+  NAME_SYSTEM_ID,
+  SEASON_PASS_ONLY_SYSTEM_ID,
+  SYSTEMBOUND_DELEGATION,
+  TIMEBOUND_DELEGATION,
+} from "../constants";
 import { useAmalgema } from "../hooks/useAmalgema";
 import { addressToEntityID } from "../mud/setupNetwork";
 
 import { ChooseUsernameForm } from "./ChooseUsernameForm";
 import { EthInput } from "./common";
 import { CustomConnectButton } from "./CustomConnectButton";
+import { GoldShopModal } from "./GoldShopModal";
 import { PromiseButton } from "./hooks/PromiseButton";
 import { useBurnerBalance, useMainWalletBalance } from "./hooks/useBalance";
 // import { useDrip } from "./hooks/useDrip";
@@ -225,17 +244,30 @@ const WithdrawFundsButton = () => {
 
 const SettingsModal = () => {
   const {
+    externalWorldContract,
+    externalWalletClient,
     network: {
       walletClient,
+      worldContract,
+      waitForTransaction,
       networkConfig: { privateKey },
     },
+    utils: { refreshBalance, hasTimeDelegation },
   } = useAmalgema();
   const [isOpen, setIsOpen] = useState(false);
+  const [alreadyDelegated, setAlreadyDelegated] = useState(false);
+  const [delegateText, setDelegateText] = useState("Delegate");
 
   const burnerAddress =
     walletClient.account.address ??
     "0x0000000000000000000000000000000000000000";
   const burnerBalance = useBurnerBalance();
+
+  // const { address } = useExternalAccount();
+  const hasDelegation = hasTimeDelegation(
+    externalWalletClient.account.address,
+    walletClient.account.address
+  );
 
   return (
     <Modal
@@ -270,6 +302,39 @@ const SettingsModal = () => {
       <div className="h-2" />
 
       <SessionWalletWarning />
+
+      <div className="flex flex-col m-2">
+        <PromiseButton
+          buttonType="primary"
+          disabled={hasDelegation || alreadyDelegated}
+          promise={async () => {
+            if (!externalWorldContract) return;
+            if (!externalWalletClient || !externalWalletClient.account) return;
+
+            const account = externalWalletClient.account;
+
+            const result = await externalWorldContract.write.registerDelegation(
+              [
+                walletClient.account.address,
+                TIMEBOUND_DELEGATION,
+                encodeFunctionData({
+                  abi: TimeDelegationAbi,
+                  functionName: "initDelegation",
+                  args: [walletClient.account.address, maxUint256],
+                }),
+              ],
+              {
+                account: account.address,
+              }
+            );
+            setAlreadyDelegated(true);
+            setDelegateText("Delegated");
+            return result;
+          }}
+        >
+          {delegateText}
+        </PromiseButton>
+      </div>
 
       <div className="h-6" />
 
@@ -309,14 +374,25 @@ const SettingsModal = () => {
 function Profile({ address }: { address: Hex }) {
   const {
     network: {
-      components: { Name },
+      components: { Name, GameToken },
     },
   } = useAmalgema();
 
+  const [gameToken, setgameToken] = useState(0);
+  const [openModal, setOpenModal] = useState(false);
+
   const name = useComponentValue(Name, addressToEntityID(address));
-  // console.log(name);
+  const _gameToken =
+    useComponentValue(
+      GameToken,
+      address ? addressToEntityID(address) : ("0" as Entity)
+    )?.amount ?? 0;
 
   const balance = useMainWalletBalance();
+
+  useEffect(() => {
+    if (Number(_gameToken) > 0) setgameToken(Number(_gameToken));
+  }, [_gameToken]);
 
   return (
     <div>
@@ -331,11 +407,22 @@ function Profile({ address }: { address: Hex }) {
               ? parseFloat(formatEther(balance.value)).toFixed(6)
               : 0}{" "}
             {NATIVE_SYMBOL}
+            <br />
+            <span className="text-orange-500 font-bold text-md">
+              Gold: {gameToken.toLocaleString()}
+            </span>
+            <button
+              onClick={() => setOpenModal(true)}
+              className="ml-3 p-2 bg-amber-400 cursor-pointer rounded-sm"
+            >
+              BUY Gold
+            </button>
           </Caption>
         </div>
 
         <SettingsModal />
       </div>
+      <GoldShopModal open={openModal} setOpen={setOpenModal} />
     </div>
   );
 }

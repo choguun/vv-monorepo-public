@@ -48,6 +48,11 @@ export function LeaderBoardModal({ setOpen, isOpen }: LeaderBoardModalProps) {
 
   const name = useComponentValue(Name, addressToEntityID(address));
 
+  const rank =
+    combinedArray.findIndex(
+      (entry: any) => Number(entry.score) <= Number(playerPointS1)
+    ) + 1;
+
   return (
     <Modal
       isOpen={isOpen}
@@ -55,7 +60,9 @@ export function LeaderBoardModal({ setOpen, isOpen }: LeaderBoardModalProps) {
       footer={
         <>
           <div className="w-full border-2 border-black py-2 px-4 rounded-md">
-            <span>Your Rank #1: {name?.value}</span>
+            <span>
+              Your Rank #{rank}: {name?.value}
+            </span>
             <span className="float-right">
               {Number(playerPointS1).toLocaleString()} Point
             </span>

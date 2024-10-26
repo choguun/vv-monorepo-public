@@ -136,8 +136,8 @@ export const LoadingScreen = ({ networkLayer, usePrepTime }: Props) => {
         {!doneLoading && (
           <div className="flex flex-col grow items-center mt-4 text-center">
             <Body>
-              VoxelWorld is Fully on-chain autonomous sandbox game. Player can
-              Quest, Craft, Interact AI, and DeFi to win the prize pool.
+              Fully on-chain sandbox MMORPG. Players quest, craft, interact, and
+              earn through permissionless modding.
             </Body>
             {/* <CustomConnectButton /> */}
             <div className="h-4"></div>
